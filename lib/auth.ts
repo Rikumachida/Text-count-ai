@@ -47,6 +47,7 @@ export const auth = betterAuth({
   },
 
   trustedOrigins: [
+    'https://contax-app.vercel.app',
     process.env.BETTER_AUTH_URL || 'http://localhost:3000',
     process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
     'http://localhost:3000',
