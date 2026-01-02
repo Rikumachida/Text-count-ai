@@ -21,7 +21,7 @@ function getClient(): Client {
 export const db = new Proxy({} as ReturnType<typeof drizzle<typeof schema>>, {
   get(_, prop) {
     const realDb = drizzle(getClient(), { schema });
-    return (realDb as Record<string | symbol, unknown>)[prop];
+    return (realDb as unknown as Record<string | symbol, unknown>)[prop];
   },
 });
 
