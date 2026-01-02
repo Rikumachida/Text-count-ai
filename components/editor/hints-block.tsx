@@ -28,6 +28,7 @@ export function HintsBlock() {
     hints,
     hintsCollapsed,
     setHints,
+    clearHints,
     setHintsCollapsed,
   } = useEditorStore();
 
@@ -179,7 +180,7 @@ export function HintsBlock() {
                 <button
                   onClick={() => {
                     setTheme('');
-                    setHints(null);
+                    clearHints();
                   }}
                   disabled={isLoading}
                   className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-[var(--border)] bg-white px-4 py-2.5 text-sm font-medium text-[var(--muted-foreground)] transition-all hover:bg-[var(--muted)] disabled:opacity-50 dark:bg-[var(--background)]"
