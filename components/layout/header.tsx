@@ -28,7 +28,7 @@ export function Header() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)]">
               <PenLine className="h-4 w-4" />
             </div>
-            <span className="text-lg">文字数カウントAI</span>
+            <span className="text-lg">Contäx</span>
           </Link>
 
           {/* Nav (logged-in) */}

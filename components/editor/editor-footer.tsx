@@ -1,6 +1,6 @@
 'use client';
 
-import { Copy, Download, Sparkles, RotateCcw, Save, Check, Loader2 } from 'lucide-react';
+import { Sparkles, RotateCcw, Save, Check, Loader2 } from 'lucide-react';
 import { useEditorStore } from '@/stores/editor-store';
 import { useDocument } from '@/hooks/use-document';
 import { CharCounter } from './char-counter';
@@ -8,30 +8,14 @@ import { useState } from 'react';
 import { ComposeResultModal } from '@/components/ai/compose-result-modal';
 
 export function EditorFooter() {
-  const { blocks, targetCharCount, getTotalCharCount, resetDocument, documentId, writingMode } = useEditorStore();
+  const { blocks, targetCharCount, getTotalCharCount, resetDocument, documentId, writingMode, documentType } = useEditorStore();
   const { saveDocument, isSaving, isAuthenticated, error } = useDocument();
-  const [copySuccess, setCopySuccess] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
   const [aiResult, setAiResult] = useState<{ text: string; charCount: number } | null>(null);
 
   const totalCharCount = getTotalCharCount();
-
-  const handleCopy = async () => {
-    const fullText = blocks
-      .map((block) => block.content)
-      .filter(Boolean)
-      .join('\n\n');
-    
-    try {
-      await navigator.clipboard.writeText(fullText);
-      setCopySuccess(true);
-      setTimeout(() => setCopySuccess(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy:', err);
-    }
-  };
 
   const handleSave = async () => {
     const result = await saveDocument();
@@ -63,17 +47,18 @@ export function EditorFooter() {
           })),
           mode: writingMode,
           targetCharCount,
+          documentType,
         }),
       });
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data?.error?.message || 'AI仕上げに失敗しました');
+        throw new Error(data?.error?.message || '文章作成に失敗しました');
       }
 
       setAiResult({ text: data.composedText, charCount: data.charCount ?? data.composedText?.length ?? 0 });
     } catch (e) {
-      setAiError(e instanceof Error ? e.message : 'AI仕上げに失敗しました');
+      setAiError(e instanceof Error ? e.message : '文章作成に失敗しました');
     } finally {
       setAiLoading(false);
     }
@@ -81,7 +66,7 @@ export function EditorFooter() {
 
   return (
     <>
-      <div className="sticky bottom-0 border-t bg-[var(--background)]/95 backdrop-blur supports-[backdrop-filter]:bg-[var(--background)]/60">
+      <div className="shrink-0 border-t shadow-lg bg-[var(--background)]">
         <div className="container mx-auto px-4 py-3">
         {/* Error message */}
         {error && (
@@ -152,38 +137,15 @@ export function EditorFooter() {
               </button>
             )}
 
-            {/* AI Compose (placeholder) */}
+            {/* AI Compose */}
             <button
               className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-violet-500 to-purple-500 px-4 py-1.5 text-sm font-medium text-white shadow-sm transition-all hover:shadow-md disabled:opacity-50"
               disabled={!isAuthenticated || aiLoading}
-              title={isAuthenticated ? 'AI機能' : 'ログインするとAI機能が使えます'}
+              title={isAuthenticated ? '文章を作成する' : 'ログインするとAI機能が使えます'}
               onClick={handleAiCompose}
             >
               {aiLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-              <span>{aiLoading ? '生成中...' : 'AI仕上げ'}</span>
-            </button>
-
-            {/* Copy */}
-            <button
-              onClick={handleCopy}
-              className={`flex items-center gap-1.5 rounded-lg px-4 py-1.5 text-sm font-medium transition-all ${
-                copySuccess
-                  ? 'bg-[var(--success)] text-white'
-                  : 'bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90'
-              }`}
-            >
-              {copySuccess ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-              <span>{copySuccess ? 'コピーしました！' : 'コピー'}</span>
-            </button>
-
-            {/* Export (placeholder) */}
-            <button
-              className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm transition-colors hover:bg-[var(--muted)] disabled:opacity-50"
-              disabled={!isAuthenticated}
-              title={isAuthenticated ? 'エクスポート' : 'ログインするとエクスポート機能が使えます'}
-            >
-              <Download className="h-4 w-4" />
-              <span className="hidden sm:inline">エクスポート</span>
+              <span>{aiLoading ? '作成中...' : '文章を作成する'}</span>
             </button>
           </div>
         </div>

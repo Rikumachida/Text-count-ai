@@ -1,12 +1,14 @@
 'use client';
 
+import { useRef, useEffect } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, X, Lightbulb } from 'lucide-react';
+import Image from 'next/image';
 import { Block } from '@/types/block';
-import { BLOCK_TYPES } from '@/lib/constants/block-types';
-import { Progress } from '@/components/ui/progress';
+import { BlockType } from '@/lib/constants/block-types';
 import { cn } from '@/lib/utils/cn';
+import { BlockLabelBadge } from './block-label-badge';
+import { BLOCK_PLACEHOLDER_TEXT } from './block-tag';
 
 interface BlockItemProps {
   block: Block;
@@ -20,11 +22,12 @@ interface BlockItemProps {
 export function BlockItem({
   block,
   onContentChange,
-  onLabelChange,
   onDelete,
   canDelete = true,
   hintText,
 }: BlockItemProps) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  
   const {
     attributes,
     listeners,
@@ -39,99 +42,120 @@ export function BlockItem({
     transition,
   };
 
-  const blockInfo = BLOCK_TYPES[block.type];
   const charCount = block.content.length;
   const isOverflow = charCount > block.targetCharCount;
+
+  // テキストエリアの高さを自動調整
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      // 一度高さをリセットしてからscrollHeightを取得
+      textarea.style.height = 'auto';
+      textarea.style.height = `${Math.max(80, textarea.scrollHeight)}px`;
+    }
+  }, [block.content]);
 
   return (
     <div
       ref={setNodeRef}
       style={style}
       className={cn(
-        'rounded-xl border bg-[var(--background)] shadow-sm transition-shadow',
+        'rounded-2xl border border-[#D9D9D9] bg-white p-2 transition-shadow',
         isDragging && 'shadow-lg opacity-90 z-50',
         'hover:shadow-md'
       )}
     >
       {/* Header */}
-      <div
-        className="flex items-center gap-2 border-b px-3 py-2"
-        style={{ borderLeftColor: blockInfo.color, borderLeftWidth: '4px' }}
-      >
-        {/* Drag handle */}
-        <button
-          {...attributes}
-          {...listeners}
-          className="cursor-grab touch-none rounded p-1 text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)] active:cursor-grabbing"
-        >
-          <GripVertical className="h-4 w-4" />
-        </button>
-
-        {/* Icon */}
-        <span className="text-lg">{blockInfo.icon}</span>
-
-        {/* Label (editable) */}
-        <input
-          type="text"
-          value={block.label}
-          onChange={(e) => onLabelChange(e.target.value)}
-          className="flex-1 bg-transparent text-sm font-medium focus:outline-none"
-          placeholder="ラベルを入力..."
-        />
-
-        {/* Char count */}
-        <span
-          className={cn(
-            'text-xs tabular-nums',
-            isOverflow
-              ? 'text-[var(--error)] font-semibold'
-              : 'text-[var(--muted-foreground)]'
-          )}
-        >
-          {charCount.toLocaleString()} / {block.targetCharCount.toLocaleString()}
-        </span>
-
-        {/* Delete button */}
-        {canDelete && (
+      <div className="flex items-center justify-between gap-4 mb-4">
+        <div className="flex items-center gap-1">
+          {/* Drag handle */}
           <button
-            onClick={onDelete}
-            className="rounded p-1 text-[var(--muted-foreground)] hover:bg-[var(--error)]/10 hover:text-[var(--error)]"
+            {...attributes}
+            {...listeners}
+            tabIndex={-1}
+            className="cursor-grab touch-none rounded p-1 hover:bg-[var(--muted)] active:cursor-grabbing"
           >
-            <X className="h-4 w-4" />
+            <Image
+              src="/icons/icon-drag.svg"
+              alt="ドラッグ"
+              width={24}
+              height={24}
+            />
           </button>
-        )}
-      </div>
 
-      {/* AI Hint (shown above textarea when available) */}
-      {hintText && (
-        <div className="flex items-start gap-2 border-b bg-gradient-to-r from-violet-50 to-purple-50 px-3 py-2 dark:from-violet-950/20 dark:to-purple-950/20">
-          <Lightbulb className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-violet-500" />
-          <p className="text-xs leading-relaxed text-violet-700 dark:text-violet-300">
-            {hintText}
-          </p>
+          {/* Block Label Badge */}
+          <BlockLabelBadge type={block.type as BlockType} />
         </div>
-      )}
 
-      {/* Content */}
-      <div className="p-3">
-        <textarea
-          value={block.content}
-          onChange={(e) => onContentChange(e.target.value)}
-          placeholder={`${blockInfo.label}を入力してください...`}
-          className="min-h-[100px] w-full resize-none bg-transparent text-sm leading-relaxed focus:outline-none"
-          rows={4}
-        />
+        <div className="flex items-center gap-2">
+          {/* Char count */}
+          <span
+            className={cn(
+              'text-xs tabular-nums',
+              isOverflow
+                ? 'text-[var(--error)] font-semibold'
+                : 'text-[var(--muted-foreground)]'
+            )}
+          >
+            {charCount.toLocaleString()} / {block.targetCharCount.toLocaleString()}
+          </span>
+
+          {/* Delete button */}
+          {canDelete && (
+            <button
+              onClick={onDelete}
+              tabIndex={-1}
+              className="rounded p-1 hover:bg-[var(--error)]/10"
+            >
+              <Image
+                src="/icons/icon-delete.svg"
+                alt="削除"
+                width={24}
+                height={24}
+              />
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Progress */}
-      <div className="px-3 pb-3">
-        <Progress
-          value={charCount}
-          max={block.targetCharCount}
-          size="sm"
-        />
+      {/* Content area */}
+      <div className="space-y-2">
+        {/* AI Hint */}
+        {hintText && (
+          <div className="flex items-start gap-2 rounded-lg bg-[#FAF5FF] p-2 pr-4">
+            <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded bg-[#F4E9FF]">
+              <Image
+                src="/icons/icon-hint.svg"
+                alt=""
+                width={28}
+                height={28}
+              />
+            </div>
+            <p className="text-xs leading-relaxed text-[#633571]">
+              {hintText}
+            </p>
+          </div>
+        )}
+
+        {/* Text input */}
+        <div className="flex items-start gap-2 rounded-lg bg-[#F9F9F9] p-2 pr-4">
+          <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded bg-[#EEEEEE]">
+            <Image
+              src="/icons/icon-edit.svg"
+              alt=""
+              width={28}
+              height={28}
+            />
+          </div>
+          <textarea
+            ref={textareaRef}
+            value={block.content}
+            onChange={(e) => onContentChange(e.target.value)}
+            placeholder={BLOCK_PLACEHOLDER_TEXT[block.type as BlockType] || '自由に記述してください'}
+            className="min-h-[80px] flex-1 resize-none overflow-hidden bg-transparent text-xs leading-relaxed text-[#4C484D] placeholder:text-[#9CA3AF] focus:outline-none"
+          />
+        </div>
       </div>
     </div>
   );
 }
-

@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import { Block } from '@/types/block';
 import { WritingMode } from '@/types/document';
 import { DEFAULT_PREP_BLOCKS, BlockType, BLOCK_TYPES } from '@/lib/constants/block-types';
+import { DocumentType } from '@/lib/constants/document-types';
 import { v4 as uuidv4 } from 'uuid';
 
 // ヒント関連の型
@@ -33,6 +34,7 @@ interface EditorState {
   targetCharCount: number;
   blocks: Block[];
   writingMode: WritingMode;
+  documentType: DocumentType | null;
 
   // Hints state
   hints: HintsData | null;
@@ -42,6 +44,7 @@ interface EditorState {
   setTitle: (title: string) => void;
   setTargetCharCount: (count: number) => void;
   setWritingMode: (mode: WritingMode) => void;
+  setDocumentType: (type: DocumentType | null) => void;
   
   // Block actions
   addBlock: (type: BlockType, index?: number) => void;
@@ -93,6 +96,7 @@ export const useEditorStore = create<EditorState>()(
       targetCharCount: 1000,
       blocks: createInitialBlocks(),
       writingMode: 'formal',
+      documentType: null,
 
       // Hints state
       hints: null,
@@ -107,6 +111,8 @@ export const useEditorStore = create<EditorState>()(
       },
       
       setWritingMode: (mode) => set({ writingMode: mode }),
+      
+      setDocumentType: (type) => set({ documentType: type }),
 
       // Block actions
       addBlock: (type, index) => {
@@ -187,6 +193,7 @@ export const useEditorStore = create<EditorState>()(
           targetCharCount: 1000,
           blocks: createInitialBlocks(),
           writingMode: 'formal',
+          documentType: null,
           hints: null,
           hintsCollapsed: false,
         });
@@ -200,6 +207,7 @@ export const useEditorStore = create<EditorState>()(
           targetCharCount: doc.targetCharCount,
           blocks: doc.blocks,
           writingMode: doc.writingMode,
+          documentType: null,
           hints: null,
           hintsCollapsed: false,
         });

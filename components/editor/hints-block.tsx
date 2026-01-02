@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import { useEditorStore } from '@/stores/editor-store';
 import { useSession } from '@/lib/auth-client';
+import { DOCUMENT_TYPES, DocumentType } from '@/lib/constants/document-types';
 import {
-  Lightbulb,
   ChevronDown,
   ChevronUp,
   Loader2,
@@ -14,6 +14,7 @@ import {
   AlertCircle,
   RefreshCw,
 } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 
 export function HintsBlock() {
@@ -22,6 +23,8 @@ export function HintsBlock() {
     blocks,
     targetCharCount,
     writingMode,
+    documentType,
+    setDocumentType,
     hints,
     hintsCollapsed,
     setHints,
@@ -54,6 +57,7 @@ export function HintsBlock() {
           })),
           targetCharCount,
           writingMode,
+          documentType,
         }),
       });
 
@@ -83,17 +87,22 @@ export function HintsBlock() {
   }
 
   return (
-    <div className="mb-6 overflow-hidden rounded-2xl border bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30">
+    <div className="overflow-hidden rounded-2xl border bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30">
       {/* Header */}
       <div
         className="flex cursor-pointer items-center justify-between px-5 py-4"
         onClick={() => hints && setHintsCollapsed(!hintsCollapsed)}
       >
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-purple-500 text-white">
-            <Lightbulb className="h-4 w-4" />
+          <div className="flex h-8 w-8 items-center justify-center rounded bg-[#F4E9FF]">
+            <Image
+              src="/icons/icon-ai-hint.png"
+              alt=""
+              width={28}
+              height={28}
+            />
           </div>
-          <h2 className="font-semibold">AIヒント</h2>
+          <h2 className="font-semibold">より良い文章を作成する</h2>
           {hints && (
             <span className="rounded-full bg-violet-100 px-2 py-0.5 text-xs text-violet-700 dark:bg-violet-900/50 dark:text-violet-300">
               生成済み
@@ -114,18 +123,51 @@ export function HintsBlock() {
       {/* Content */}
       {!hintsCollapsed && (
         <div className="border-t px-5 py-4">
+          {/* Document Type Tags */}
+          <div className="mb-4">
+            <label className="mb-2 block text-sm font-medium text-[var(--muted-foreground)]">
+              どんな文章を書きますか？
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {DOCUMENT_TYPES.map((type) => {
+                const isSelected = documentType === type.id;
+                return (
+                  <button
+                    key={type.id}
+                    onClick={() => setDocumentType(isSelected ? null : type.id)}
+                    className={`flex h-7 items-center gap-1 rounded-full border pl-2 pr-3 text-[10px] font-semibold transition-all ${
+                      isSelected
+                        ? 'border-[var(--primary)] bg-[var(--primary)] text-white'
+                        : 'border-[#D9D9D9] bg-white text-[#5E5677] hover:border-violet-300'
+                    }`}
+                    title={type.description}
+                  >
+                    <Image
+                      src={type.emojiSrc}
+                      alt=""
+                      width={20}
+                      height={20}
+                      className="flex-shrink-0"
+                    />
+                    <span>{type.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Theme input */}
           <div className="mb-4">
             <label className="mb-2 block text-sm font-medium text-[var(--muted-foreground)]">
               何について書きますか？
             </label>
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2">
               <input
                 type="text"
                 value={theme}
                 onChange={(e) => setTheme(e.target.value)}
                 placeholder="例: AIと人間の共存について"
-                className="flex-1 rounded-lg border bg-white px-4 py-2.5 text-sm shadow-sm transition-shadow focus:outline-none focus:ring-2 focus:ring-violet-500/50 dark:bg-[var(--background)]"
+                className="w-full rounded-lg border bg-white px-4 py-2.5 text-sm shadow-sm transition-shadow focus:outline-none focus:ring-2 focus:ring-violet-500/50 dark:bg-[var(--background)]"
                 onKeyDown={(e) => {
                   // IME変換中はEnterで送信しない
                   if (e.key === 'Enter' && !isLoading && !e.nativeEvent.isComposing) {
@@ -133,22 +175,34 @@ export function HintsBlock() {
                   }
                 }}
               />
-              <button
-                onClick={handleGenerateHints}
-                disabled={isLoading || !theme.trim()}
-                className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-violet-500 to-purple-500 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:shadow-md disabled:opacity-50"
-              >
-                {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : hints ? (
-                  <RefreshCw className="h-4 w-4" />
-                ) : (
-                  <Sparkles className="h-4 w-4" />
-                )}
-                <span className="hidden sm:inline">
-                  {isLoading ? '生成中...' : hints ? '再生成' : 'ヒント生成'}
-                </span>
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setTheme('');
+                    setHints(null);
+                  }}
+                  disabled={isLoading}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-[var(--border)] bg-white px-4 py-2.5 text-sm font-medium text-[var(--muted-foreground)] transition-all hover:bg-[var(--muted)] disabled:opacity-50 dark:bg-[var(--background)]"
+                >
+                  リセット
+                </button>
+                <button
+                  onClick={handleGenerateHints}
+                  disabled={isLoading || !theme.trim()}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-violet-500 to-purple-500 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:shadow-md disabled:opacity-50"
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : hints ? (
+                    <RefreshCw className="h-4 w-4" />
+                  ) : (
+                    <Sparkles className="h-4 w-4" />
+                  )}
+                  <span>
+                    {isLoading ? '生成中...' : hints ? '再生成' : 'ヒント生成'}
+                  </span>
+                </button>
+              </div>
             </div>
           </div>
 

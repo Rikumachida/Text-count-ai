@@ -21,12 +21,13 @@ export async function getCurrentUser() {
 
 /**
  * 認証必須のページで使用（未認証時はエラー）
+ * @returns session.user オブジェクト
  */
 export async function requireAuth() {
   const session = await getSession();
-  if (!session) {
+  if (!session?.user) {
     throw new Error('Unauthorized');
   }
-  return session;
+  return session.user;
 }
 

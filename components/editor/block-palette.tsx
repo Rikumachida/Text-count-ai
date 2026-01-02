@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import { Plus, ChevronDown } from 'lucide-react';
-import { BLOCK_TYPES, ADDITIONAL_BLOCK_TYPES, BlockType } from '@/lib/constants/block-types';
+import { ADDITIONAL_BLOCK_TYPES, BlockType } from '@/lib/constants/block-types';
 import { cn } from '@/lib/utils/cn';
+import { BlockTag } from './block-tag';
 
 interface BlockPaletteProps {
   onAddBlock: (type: BlockType) => void;
@@ -31,28 +32,23 @@ export function BlockPalette({ onAddBlock }: BlockPaletteProps) {
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 right-0 top-full z-10 mt-2 rounded-xl border bg-[var(--background)] p-2 shadow-lg">
-          <div className="grid grid-cols-2 gap-1 sm:grid-cols-3 md:grid-cols-4">
-            {allBlockTypes.map((type) => {
-              const blockInfo = BLOCK_TYPES[type];
-              return (
-                <button
-                  key={type}
-                  onClick={() => {
-                    onAddBlock(type);
-                    setIsOpen(false);
-                  }}
-                  className="flex items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-[var(--muted)]"
-                >
-                  <span>{blockInfo.icon}</span>
-                  <span>{blockInfo.label.split('（')[0]}</span>
-                </button>
-              );
-            })}
+        <div className="absolute left-0 right-0 top-full z-10 mt-2 rounded-xl border bg-[var(--background)] p-3 shadow-lg">
+          <div className="flex flex-wrap gap-2">
+            {allBlockTypes.map((type) => (
+              <button
+                key={type}
+                onClick={() => {
+                  onAddBlock(type);
+                  setIsOpen(false);
+                }}
+                className="cursor-pointer"
+              >
+                <BlockTag type={type} />
+              </button>
+            ))}
           </div>
         </div>
       )}
     </div>
   );
 }
-

@@ -4,6 +4,7 @@ import { buildHintsPrompt, ExperienceForHint } from '@/lib/ai/prompts';
 import { geminiGenerateText } from '@/lib/ai/gemini';
 import { db, experience } from '@/lib/db';
 import { eq } from 'drizzle-orm';
+import { DocumentType } from '@/lib/constants/document-types';
 
 export type HintsResponse = {
   overview: string;
@@ -37,11 +38,12 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { theme, blocks, targetCharCount, writingMode } = body as {
+    const { theme, blocks, targetCharCount, writingMode, documentType } = body as {
       theme?: string;
       blocks?: Array<{ type: string; label: string; order: number }>;
       targetCharCount?: number;
       writingMode?: 'casual' | 'formal';
+      documentType?: DocumentType | null;
     };
 
     if (!theme || typeof theme !== 'string' || theme.trim().length === 0) {
@@ -87,6 +89,7 @@ export async function POST(request: NextRequest) {
       experiences: experiencesForPrompt,
       writingMode: safeMode,
       targetCharCount: safeTarget,
+      documentType: documentType || undefined,
     });
 
     const rawText = await geminiGenerateText({
