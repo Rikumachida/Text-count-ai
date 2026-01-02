@@ -46,13 +46,7 @@ export const auth = betterAuth({
     updateAge: 60 * 60 * 24, // 1日ごとに更新
   },
 
-  trustedOrigins: [
-    'https://contax-app.vercel.app',
-    process.env.BETTER_AUTH_URL || 'http://localhost:3000',
-    process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-    'http://localhost:3000',
-    'http://192.168.0.49:3000',
-  ].filter(Boolean),
+  trustedOrigins: ['*'],
 });
 
 // 型エクスポート
