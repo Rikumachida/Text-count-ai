@@ -16,7 +16,7 @@ export function TargetInput() {
 
   return (
     <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-      <label className="text-sm font-medium">目標文字数:</label>
+      <label className="text-sm font-medium">目標の文字数を設定</label>
       <div className="flex items-center gap-2">
         <input
           type="number"

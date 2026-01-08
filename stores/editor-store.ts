@@ -18,10 +18,16 @@ export type BlockHint = {
   hint: string;
 };
 
+export type RecommendedBlock = {
+  type: string;
+  hint: string;
+};
+
 export type HintsData = {
   theme: string;
   overview: string;
   suggestedExperiences: SuggestedExperience[];
+  recommendedStructure: RecommendedBlock[];
   structureHint: string;
   blockHints: BlockHint[];
   noExperiences: boolean;
@@ -68,6 +74,7 @@ interface EditorState {
   clearHints: () => void;
   setHintsCollapsed: (collapsed: boolean) => void;
   getBlockHint: (order: number) => string | null;
+  applyRecommendedStructure: () => void;
 
   // Computed
   getTotalCharCount: () => number;
@@ -228,6 +235,39 @@ export const useEditorStore = create<EditorState>()(
         return found?.hint ?? null;
       },
 
+      applyRecommendedStructure: () => {
+        const { hints } = get();
+        if (!hints || !hints.recommendedStructure || hints.recommendedStructure.length === 0) return;
+
+        const newBlocks: Block[] = hints.recommendedStructure.map((rec, index) => {
+          const blockType = rec.type as BlockType;
+          const blockInfo = BLOCK_TYPES[blockType] || BLOCK_TYPES.custom;
+          return {
+            id: uuidv4(),
+            type: blockType,
+            label: blockInfo.label,
+            content: '',
+            order: index,
+            targetCharCount: 0,
+          };
+        });
+
+        // blockHints も推奨構成に合わせて更新
+        const newBlockHints = hints.recommendedStructure.map((rec, index) => ({
+          order: index,
+          hint: rec.hint,
+        }));
+
+        set({
+          blocks: newBlocks,
+          hints: {
+            ...hints,
+            blockHints: newBlockHints,
+          },
+        });
+        get().calculateBlockTargets();
+      },
+
       // Computed
       getTotalCharCount: () => {
         const { blocks } = get();
@@ -244,6 +284,9 @@ export const useEditorStore = create<EditorState>()(
         const { blocks, targetCharCount } = get();
         if (blocks.length === 0) return;
 
+        // 最低文字数を設定（各ブロックは最低1文字以上）
+        const MIN_CHAR_COUNT = 1;
+
         // デフォルトの比率を使用して目標文字数を計算
         const defaultRatios = DEFAULT_PREP_BLOCKS.reduce((acc, b) => {
           acc[b.type] = b.ratio;
@@ -256,16 +299,21 @@ export const useEditorStore = create<EditorState>()(
 
         const updatedBlocks = blocks.map((block) => {
           const ratio = defaultRatios[block.type] ?? evenRatio;
+          // 最低文字数を保証
+          const calculated = Math.round(targetCharCount * ratio);
           return {
             ...block,
-            targetCharCount: Math.round(targetCharCount * ratio),
+            targetCharCount: Math.max(MIN_CHAR_COUNT, calculated),
           };
         });
 
-        // 合計が目標に合うよう調整
+        // 合計が目標に合うよう調整（ただし最低文字数は保証）
         const totalTarget = updatedBlocks.reduce((sum, b) => sum + b.targetCharCount, 0);
         if (totalTarget !== targetCharCount && updatedBlocks.length > 0) {
-          updatedBlocks[0].targetCharCount += targetCharCount - totalTarget;
+          const diff = targetCharCount - totalTarget;
+          // 調整後も最低文字数を下回らないようにする
+          const newValue = updatedBlocks[0].targetCharCount + diff;
+          updatedBlocks[0].targetCharCount = Math.max(MIN_CHAR_COUNT, newValue);
         }
 
         set({ blocks: updatedBlocks });

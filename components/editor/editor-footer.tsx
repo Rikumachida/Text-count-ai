@@ -1,6 +1,6 @@
 'use client';
 
-import { Sparkles, RotateCcw, Save, Check, Loader2 } from 'lucide-react';
+import { Sparkles, RotateCcw, Save, Check, Loader2, FileText } from 'lucide-react';
 import { useEditorStore } from '@/stores/editor-store';
 import { useDocument } from '@/hooks/use-document';
 import { CharCounter } from './char-counter';
@@ -14,6 +14,7 @@ export function EditorFooter() {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
   const [aiResult, setAiResult] = useState<{ text: string; charCount: number } | null>(null);
+  const [showResultModal, setShowResultModal] = useState(false);
 
   const totalCharCount = getTotalCharCount();
 
@@ -57,6 +58,7 @@ export function EditorFooter() {
       }
 
       setAiResult({ text: data.composedText, charCount: data.charCount ?? data.composedText?.length ?? 0 });
+      setShowResultModal(true);
     } catch (e) {
       setAiError(e instanceof Error ? e.message : '文章作成に失敗しました');
     } finally {
@@ -104,6 +106,17 @@ export function EditorFooter() {
           </div>
 
           <div className="flex gap-2">
+            {/* View Generated Text */}
+            {aiResult && (
+              <button
+                onClick={() => setShowResultModal(true)}
+                className="flex items-center gap-1.5 rounded-lg border bg-[var(--background)] px-4 py-1.5 text-sm font-medium transition-all hover:bg-[var(--muted)]"
+              >
+                <FileText className="h-4 w-4" />
+                <span className="hidden sm:inline">生成した文章を見る</span>
+              </button>
+            )}
+
             {/* Save */}
             {isAuthenticated ? (
               <button
@@ -153,8 +166,8 @@ export function EditorFooter() {
       </div>
 
       <ComposeResultModal
-        open={!!aiResult}
-        onClose={() => setAiResult(null)}
+        open={showResultModal}
+        onClose={() => setShowResultModal(false)}
         text={aiResult?.text ?? ''}
         charCount={aiResult?.charCount ?? 0}
       />

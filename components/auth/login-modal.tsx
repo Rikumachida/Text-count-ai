@@ -3,11 +3,35 @@
 import { useState } from 'react';
 import { X, Loader2 } from 'lucide-react';
 import { signIn } from '@/lib/auth-client';
+import Image from 'next/image';
 
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
+
+const features = [
+  {
+    icon: '/icons/icon-lightbulb-3d.png',
+    label: 'AIヒント生成',
+    bgColor: '#F4E9FF',
+  },
+  {
+    icon: '/icons/icon-chart-3d.png',
+    label: '文字数の管理',
+    bgColor: '#D6EFFF',
+  },
+  {
+    icon: '/icons/icon-pencil-3d.png',
+    label: 'AI文章作成',
+    bgColor: '#FFEDE9',
+  },
+  {
+    icon: '/icons/icon-cards-3d.png',
+    label: '文章の構造化',
+    bgColor: '#FFF9E9',
+  },
+];
 
 export function LoginModal({ isOpen, onClose }: LoginModalProps) {
   const [isLoading, setIsLoading] = useState(false);
@@ -40,41 +64,42 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-md mx-4 rounded-2xl bg-[var(--background)] p-8 shadow-2xl">
+      <div className="relative w-full max-w-[424px] mx-4 rounded-2xl bg-white p-8 shadow-2xl">
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-lg p-2 text-[var(--muted-foreground)] transition-colors hover:bg-[var(--muted)]"
+          className="absolute right-5 top-5 rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-100"
         >
-          <X className="h-5 w-5" />
+          <X className="h-6 w-6" />
         </button>
 
-        {/* Header */}
-        <div className="mb-6 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-400 to-teal-600 text-white">
-            <svg
-              className="h-8 w-8"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-              />
-            </svg>
+        {/* Header with Symbol and Text */}
+        <div className="flex flex-col items-center gap-[21px] mb-8">
+          {/* Symbolmark */}
+          <div className="flex items-center justify-center">
+            <Image
+              src="/icons/symbolmark.svg"
+              alt="Contäx"
+              width={64}
+              height={64}
+              className="w-16 h-16"
+            />
           </div>
-          <h2 className="text-2xl font-bold">ログイン</h2>
-          <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-            ログインすると、ドキュメントの保存やAI機能が使えます
-          </p>
+
+          {/* Text Content */}
+          <div className="flex flex-col items-center gap-3.5 w-full">
+            <h2 className="text-[28px] font-medium tracking-tight text-black text-center">
+              Contäxにログイン
+            </h2>
+            <p className="text-[17.5px] leading-[1.4] tracking-tight text-[#696969] text-center max-w-[290px]">
+              ログインするとドキュメントの保存やAI機能が使えます
+            </p>
+          </div>
         </div>
 
         {/* Error message */}
         {error && (
-          <div className="mb-4 rounded-lg bg-[var(--error)]/10 px-4 py-3 text-sm text-[var(--error)]">
+          <div className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">
             {error}
           </div>
         )}
@@ -110,39 +135,45 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
           <span>{isLoading ? 'ログイン中...' : 'Googleでログイン'}</span>
         </button>
 
-        {/* Features */}
-        <div className="mt-8 space-y-3">
-          <p className="text-center text-xs font-medium text-[var(--muted-foreground)]">
+        {/* Features Section */}
+        <div className="mt-10">
+          <p className="text-[13.5px] leading-[1.8] tracking-tight text-[#696969] text-center mb-2">
             ログインすると利用できる機能
           </p>
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="flex items-center gap-2 rounded-lg bg-[var(--muted)] px-3 py-2">
-              <span className="text-lg">💾</span>
-              <span>ドキュメント保存</span>
-            </div>
-            <div className="flex items-center gap-2 rounded-lg bg-[var(--muted)] px-3 py-2">
-              <span className="text-lg">✨</span>
-              <span>AI文章仕上げ</span>
-            </div>
-            <div className="flex items-center gap-2 rounded-lg bg-[var(--muted)] px-3 py-2">
-              <span className="text-lg">📁</span>
-              <span>フォルダ整理</span>
-            </div>
-            <div className="flex items-center gap-2 rounded-lg bg-[var(--muted)] px-3 py-2">
-              <span className="text-lg">📝</span>
-              <span>テンプレート</span>
-            </div>
+          <div className="grid grid-cols-2 gap-[5px]">
+            {features.map((feature, index) => (
+              <div
+                key={index}
+                className="flex items-center gap-2 rounded-md bg-[#F8F8F8] py-2 pl-2 pr-2"
+              >
+                <div
+                  className="flex items-center justify-center w-8 h-8 rounded"
+                  style={{ backgroundColor: feature.bgColor }}
+                >
+                  <Image
+                    src={feature.icon}
+                    alt={feature.label}
+                    width={20}
+                    height={20}
+                    className="w-5 h-5"
+                  />
+                </div>
+                <span className="text-[13.5px] font-semibold text-[#332A3C]">
+                  {feature.label}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
 
         {/* Terms */}
-        <p className="mt-6 text-center text-xs text-[var(--muted-foreground)]">
+        <p className="mt-10 text-[13.5px] leading-[1.8] tracking-tight text-[#696969] text-center">
           ログインすることで、
-          <a href="#" className="underline hover:text-[var(--foreground)]">
+          <a href="#" className="underline hover:text-gray-800">
             利用規約
           </a>
           と
-          <a href="#" className="underline hover:text-[var(--foreground)]">
+          <a href="#" className="underline hover:text-gray-800">
             プライバシーポリシー
           </a>
           に同意したものとみなされます。
@@ -151,4 +182,3 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
     </div>
   );
 }
-

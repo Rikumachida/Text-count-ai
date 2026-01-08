@@ -8,11 +8,9 @@ interface BlockTagProps {
   className?: string;
 }
 
-// 統一カラー
-const TAG_BG_COLOR = '#FAF5FF';
 const TAG_TEXT_COLOR = '#5E5677';
 
-// パレット用の短いラベル設定
+// パレット用の短いラベル設定（Figmaのデザインに基づく色）
 const BLOCK_TAG_CONFIG: Record<BlockType, {
   emojiSrc: string | null;
   label: string;
@@ -22,37 +20,37 @@ const BLOCK_TAG_CONFIG: Record<BlockType, {
   point: {
     emojiSrc: '/emojis/emoji-pushpin.png',
     label: '結論',
-    bgColor: TAG_BG_COLOR,
+    bgColor: '#F7F2FD',
     textColor: TAG_TEXT_COLOR,
   },
   reason: {
     emojiSrc: '/emojis/emoji-question.png',
     label: '理由',
-    bgColor: TAG_BG_COLOR,
+    bgColor: '#FDF3F2',
     textColor: TAG_TEXT_COLOR,
   },
   example: {
     emojiSrc: '/emojis/emoji-starstruck.png',
     label: '具体例',
-    bgColor: TAG_BG_COLOR,
+    bgColor: '#F2F6FD',
     textColor: TAG_TEXT_COLOR,
   },
   background: {
     emojiSrc: '/emojis/emoji-thinking.png',
     label: '背景',
-    bgColor: TAG_BG_COLOR,
+    bgColor: '#FDF3F2',
     textColor: TAG_TEXT_COLOR,
   },
   problem: {
     emojiSrc: '/emojis/emoji-anxious.png',
     label: '課題',
-    bgColor: TAG_BG_COLOR,
+    bgColor: '#F2F6FD',
     textColor: TAG_TEXT_COLOR,
   },
   solution: {
     emojiSrc: '/emojis/emoji-lightbulb.png',
     label: '解決策',
-    bgColor: TAG_BG_COLOR,
+    bgColor: '#FDF3F2',
     textColor: TAG_TEXT_COLOR,
   },
   custom: {

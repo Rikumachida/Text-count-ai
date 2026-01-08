@@ -10,12 +10,14 @@ import {
   Loader2,
   Sparkles,
   BookOpen,
-  Layers,
   AlertCircle,
   RefreshCw,
+  CheckCircle2,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { BlockTag } from './block-tag';
+import { BlockType } from '@/lib/constants/block-types';
 
 export function HintsBlock() {
   const { data: session } = useSession();
@@ -30,6 +32,7 @@ export function HintsBlock() {
     setHints,
     clearHints,
     setHintsCollapsed,
+    applyRecommendedStructure,
   } = useEditorStore();
 
   const [theme, setTheme] = useState('');
@@ -71,6 +74,7 @@ export function HintsBlock() {
         theme: theme.trim(),
         overview: data.overview ?? '',
         suggestedExperiences: data.suggestedExperiences ?? [],
+        recommendedStructure: data.recommendedStructure ?? [],
         structureHint: data.structureHint ?? '',
         blockHints: data.blockHints ?? [],
         noExperiences: data.noExperiences ?? false,
@@ -268,16 +272,57 @@ export function HintsBlock() {
                 </div>
               )}
 
-              {/* Structure hint */}
-              {hints.structureHint && (
+              {/* Recommended Structure */}
+              {hints.recommendedStructure && hints.recommendedStructure.length > 0 && (
                 <div className="rounded-xl bg-white/70 p-4 dark:bg-white/5">
-                  <div className="mb-2 flex items-center gap-2 text-sm font-medium text-violet-700 dark:text-violet-300">
-                    <Layers className="h-4 w-4" />
-                    構成ヒント
+                  <div className="mb-3 flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm font-medium text-violet-700 dark:text-violet-300">
+                      <Sparkles className="h-4 w-4" />
+                      おすすめの構成
+                    </div>
+                    <button
+                      onClick={() => {
+                        if (window.confirm('現在の構成を推奨構成に置き換えますか？\n入力済みの内容は削除されます。')) {
+                          applyRecommendedStructure();
+                        }
+                      }}
+                      className="flex items-center gap-1.5 rounded-lg bg-violet-500 px-3 py-1.5 text-xs font-medium text-white transition-all hover:bg-violet-600"
+                    >
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                      構成を適用
+                    </button>
                   </div>
-                  <p className="text-sm leading-relaxed text-[var(--foreground)]">
-                    {hints.structureHint}
-                  </p>
+                  
+                  {/* Block list with hints */}
+                  <div className="space-y-3">
+                    {hints.recommendedStructure.map((rec, index) => (
+                      <div key={index} className="flex flex-col gap-2">
+                        {/* Block Tag */}
+                        <div className="flex items-center gap-2">
+                          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-violet-100 text-xs font-medium text-violet-600 dark:bg-violet-900/50 dark:text-violet-300">
+                            {index + 1}
+                          </span>
+                          <BlockTag type={rec.type as BlockType} />
+                        </div>
+                        
+                        {/* Hint Box */}
+                        <div className="ml-7 rounded-lg bg-violet-50 p-3 dark:bg-violet-950/30">
+                          <div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-violet-600 dark:text-violet-400">
+                            <Image
+                              src="/icons/icon-hint.svg"
+                              alt=""
+                              width={14}
+                              height={14}
+                            />
+                            おすすめヒント
+                          </div>
+                          <p className="text-xs leading-relaxed text-violet-700 dark:text-violet-300">
+                            {rec.hint}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>

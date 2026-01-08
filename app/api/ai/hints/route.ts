@@ -6,9 +6,15 @@ import { db, experience } from '@/lib/db';
 import { eq } from 'drizzle-orm';
 import { DocumentType } from '@/lib/constants/document-types';
 
+export type RecommendedBlock = {
+  type: string;
+  hint: string;
+};
+
 export type HintsResponse = {
   overview: string;
   suggestedExperiences: { id: string; title: string; relevance: string }[];
+  recommendedStructure: RecommendedBlock[];
   structureHint: string;
   blockHints: { order: number; hint: string }[];
   noExperiences: boolean;
@@ -112,6 +118,10 @@ export async function POST(request: NextRequest) {
       parsed = {
         overview: 'ヒントの生成に問題がありました。もう一度お試しください。',
         suggestedExperiences: [],
+        recommendedStructure: blocks.map((b) => ({
+          type: b.type,
+          hint: `${b.label || 'このセクション'}について書いてみましょう`,
+        })),
         structureHint: '',
         blockHints: blocks.map((b, idx) => ({
           order: typeof b.order === 'number' ? b.order : idx,

@@ -32,7 +32,7 @@ export function BlockPalette({ onAddBlock }: BlockPaletteProps) {
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 right-0 top-full z-10 mt-2 rounded-xl border bg-[var(--background)] p-3 shadow-lg">
+        <div className="absolute left-0 right-0 bottom-full z-10 mb-2 rounded-xl border bg-[var(--background)] p-3 shadow-lg">
           <div className="flex flex-wrap gap-2">
             {allBlockTypes.map((type) => (
               <button
