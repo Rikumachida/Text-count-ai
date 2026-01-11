@@ -3,7 +3,8 @@
 import { createAuthClient } from 'better-auth/react';
 
 export const authClient = createAuthClient({
-  baseURL: process.env.NEXT_PUBLIC_APP_URL || 'https://contax-next-f1koyxl7l-rikumachidas-projects.vercel.app/',
+  // 同一オリジンからAPIを呼び出すため、baseURLは設定しない
+  // これにより、Vercelのプレビューデプロイでも正しく動作する
 });
 
 export const { signIn, signOut, useSession } = authClient;
